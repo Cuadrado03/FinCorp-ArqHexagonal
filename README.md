@@ -1,10 +1,8 @@
-# FinCorp — Arquitectura Hexagonal (Entrega 3 Refactorizada)
-
-Proyecto de microservicios bajo **Arquitectura Hexagonal** para el sistema de créditos corporativos FinCorp.
+# FinCorp — Arquitectura Hexagonal 
 
 ---
 
-## 📐 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 FinCorp_Refactored/
@@ -67,15 +65,10 @@ FinCorp_Refactored/
 
 ---
 
-## 🔄 Cambios Realizados en esta Entrega
+## Cambios Realizados en esta Entrega
 
 ### 1. Refactorización de la API (Capa Infraestructura/Web)
 
-**ELIMINADO:** `GET /credits/by-cedula/{employeeId}`
-
-El endpoint redundante de búsqueda por cédula ha sido **eliminado** junto con el método `getByEmployeeId` del puerto `CreditUseCase` y del servicio de aplicación `CreditService`. La búsqueda por empleado queda consolidada en:
-
-**CONSERVADO y PRIORIZADO:** `GET /credits/history/{employeeId}`
 
 Este endpoint cumple ahora función de **búsqueda integral** retornando la lista de créditos del empleado más:
 - Resumen estadístico (total, aprobados, rechazados)
@@ -92,7 +85,7 @@ Este endpoint cumple ahora función de **búsqueda integral** retornando la list
 | `PUT`    | `/credits/{id}`                   | Actualizar crédito                               |
 | `DELETE` | `/credits/{id}`                   | Eliminar crédito                                 |
 
-### 2. Evolución del Microservicio Simulador
+### 2.  Microservicio Simulador
 
 - **UI en español** con cabecera: *"Simula tu crédito y piensa dos veces antes de tomar la decisión de ser parte de nuestra compañía FinCorp"*
 - **Diseño mejorado**: interfaz moderna con colores corporativos, tarjetas y tipografía legible
@@ -111,7 +104,7 @@ Este endpoint cumple ahora función de **búsqueda integral** retornando la list
 
 ---
 
-## 🚀 Instrucciones de Docker
+## Instrucciones de Docker
 
 ### Requisitos previos
 
@@ -121,7 +114,7 @@ Este endpoint cumple ahora función de **búsqueda integral** retornando la list
 ### Levantar todos los servicios
 
 ```bash
-# Desde la raíz del proyecto (donde está docker-compose.yml)
+
 docker compose up --build
 ```
 
@@ -163,7 +156,7 @@ fincorp-app          Up
 # Detener sin borrar datos
 docker compose down
 
-# Detener y borrar volúmenes (⚠️ borra la base de datos)
+# Detener y borrar volúmenes (borra la base de datos)
 docker compose down -v
 ```
 
@@ -184,7 +177,7 @@ docker compose logs -f postgres
 
 ---
 
-## 🧪 Ejemplo de uso de la API
+## Ejemplo de uso de la API
 
 ### Crear un crédito
 
@@ -226,7 +219,7 @@ Respuesta incluye: `status`, `total_to_pay`, `total_interest`, `estimated_instal
 
 ---
 
-## ⚙️ Variables de Entorno
+##  Variables de Entorno
 
 ### fincorp-app (Spring Boot)
 
@@ -246,7 +239,7 @@ Respuesta incluye: `status`, `total_to_pay`, `total_interest`, `estimated_instal
 
 ---
 
-## 🏗️ Arquitectura Hexagonal — Principios aplicados
+## Arquitectura Hexagonal — Principios aplicados
 
 ```
 ┌─────────────────────────────────────────────────────────┐
