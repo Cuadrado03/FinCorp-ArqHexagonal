@@ -1,0 +1,105 @@
+version: "3.9"
+
+# ============================================================
+# FinCorp — Arquitectura Hexagonal
+# docker-compose.yml
+#
+# Servicios:
+#   postgres        → Base de datos PostgreSQL 16
+#   simulator       → Microservicio Python (FastAPI) — Simulador de Créditos
+#   mailhog         → SMTP local para desarrollo
+#   fincorp-app     → Microservicio principal Spring Boot (Java 17)
+#
+# Credenciales de Postgres:
+#   POSTGRES_USER:     fincorp
+#   POSTGRES_PASSWORD: fincorp
+#   POSTGRES_DB:       fincorp
+#
+# Conectividad: los microservicios referencian "postgres" (nombre de servicio
+# Docker) en la cadena JDBC para garantizar persistencia entre reinicios.
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # Base de datos PostgreSQL
+  # ----------------------------------------------------------
+  postgres:
+    image: postgres:16
+    container_name: fincorp-postgres
+    environment:
+      POSTGRES_USER: fincorp
+      POSTGRES_PASSWORD: fincorp
+      POSTGRES_DB: fincorp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fincorp -d fincorp"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ----------------------------------------------------------
+  # Microservicio Simulador de Créditos (Python / FastAPI)
+  # ----------------------------------------------------------
+  simulator:
+    build:
+      context: ./credit-simulator-service
+      dockerfile: Dockerfile
+    container_name: fincorp-simulator
+    environment:
+      SIMULATOR_DB_PATH: /data/simulations.db
+    ports:
+      - "8081:8081"
+    volumes:
+      - simulator_data:/data
+    restart: unless-stopped
+
+  # ----------------------------------------------------------
+  # MailHog — servidor SMTP local para desarrollo
+  # ----------------------------------------------------------
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: fincorp-mailhog
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # UI web
+    restart: unless-stopped
+
+  # ----------------------------------------------------------
+  # Microservicio principal FinCorp (Spring Boot / Java 17)
+  # Nota: usa jdbc:postgresql://postgres:5432/fincorp
+  #       → "postgres" es el nombre del servicio Docker, no localhost.
+  # ----------------------------------------------------------
+  fincorp-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fincorp-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      simulator:
+        condition: service_started
+      mailhog:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fincorp
+      SPRING_DATASOURCE_USERNAME: fincorp
+      SPRING_DATASOURCE_PASSWORD: fincorp
+      SIMULATOR_BASE_URL: http://simulator:8081
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_AUTH: "false"
+      SPRING_MAIL_STARTTLS: "false"
+      NOTIFICATION_SENDER: no-reply@fincorp.local
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  simulator_data:
